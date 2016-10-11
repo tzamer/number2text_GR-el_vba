@@ -1,0 +1,107 @@
+   Option Explicit
+    Dim bFemale As Boolean
+
+    Public Function SayEuro(curAmount As Double) As String
+    'Pre: curAmount is a valid number between -999.999,99 and 999.999,99
+    'Post: sayEuro is a string describing the numeric value
+    ' Usage Example: a=SayEuro(-123.22)->a="Μείον Εκατόv Είκοσι Τρία Ευρώ και Είκοσι Δύο Λεπτά"
+    ' Yiannis Papadopoulos <www.yiapap.com> 2004
+
+    Dim sResult As String
+    sResult = ""
+    If curAmount < 0 Then
+    sResult = "Μείον "
+    curAmount = Abs(curAmount)
+    End If
+    sResult = sResult & Trim(SayNumber(Int(curAmount)) & "Ευρώ")
+    If curAmount - Int(curAmount) > 0 Then
+    sResult = Trim(sResult & " και " & SayNumber(100 * (curAmount - Int(curAmount))) & "Λεπτά")
+    End If
+    SayEuro = sResult
+    End Function
+
+    Private Function SayNumber(curAmount As Long) As String
+    Dim sResult
+    Dim lAmount As Double
+    Dim tmp As Integer
+
+    lAmount = Round(curAmount, 0)
+    sResult = ""
+
+    'Uniques & decimals
+    tmp = Val(Right(Str(lAmount), 2))
+    If lAmount = 0 Then
+    sResult = "Μηδέν "
+    Else
+    If tmp < 20 Then
+    sResult = sResult & IIf(sResult = "", "", " ") & IIf(bFemale, SayUniqueFemale(tmp), SayUnique(tmp)) & " "
+    Else
+    sResult = sResult & SayTens(tmp) & " "
+    If (tmp - 10 * (tmp \ 10)) > 0 Then sResult = sResult & IIf(bFemale, SayUniqueFemale(tmp - 10 * (tmp \ 10)), SayUnique(tmp - 10 * (tmp \ 10))) & " "
+    End If
+    lAmount = lAmount - tmp
+
+    'Hundreds
+    tmp = Val(Right(Str(lAmount), 3))
+    If tmp > 100 Or (tmp = 100 And sResult <> "") Then sResult = IIf(bFemale, SayHundredsFemale(tmp), SayHundreds(tmp)) & " " & sResult
+    If tmp = 100 And sResult = "" Then sResult = "Εκατό"
+    lAmount = lAmount - tmp
+
+    'Thousands
+    If lAmount >= 1000 Then sResult = SayThousands((lAmount)) & " " & sResult
+    End If
+    bFemale = False
+    SayNumber = sResult
+    End Function
+
+    Private Function SayUnique(iNumber As Integer) As String
+    Dim vardigit
+    vardigit = Array("Ένα", "Δύο", "Τρία", "Τέσσερα", _
+    "Πέντε", "Έξι", "Επτά", "Οκτώ", "Εννέα", "Δέκα", "Ένδεκα", _
+    "Δώδεκα", "Δεκατρία", "Δεκατέσσερα", "Δεκαπέντε", "Δεκαέξι", "Δεκαεφτά", _
+    "Δεκαοχτώ", "Δεκαεννιά")
+
+    If iNumber > 0 Then SayUnique = vardigit(iNumber - 1)
+    Erase vardigit
+    End Function
+
+    Private Function SayTens(iNumber As Integer) As String
+    Dim vardigit
+    vardigit = Array("Δέκα-Dummy", "Είκοσι", "Τριάντα", "Σαράντα", "Πενήντα", "Εξήντα", "Εβδομήντα", _
+    "Ογδόντα", "Ενενήντα")
+    SayTens = vardigit(iNumber \ 10 - 1)
+    Erase vardigit
+    End Function
+
+    Private Function SayHundreds(iNumber As Integer) As String
+    Dim vardigit
+    vardigit = Array("Εκατόv", "Διακόσια", "Τριακόσια", "Τετρακόσια", "Πεντακόσια", _
+    "Εξακόσια", "Επτακόσια", "Οκτακόσια", "Εννιακόσια")
+    SayHundreds = vardigit(iNumber \ 100 - 1)
+    Erase vardigit
+    End Function
+
+    Private Function SayThousands(iNumber As Long) As String
+    bFemale = True
+    SayThousands = IIf(iNumber = 1000, "Χίλια", SayNumber(iNumber \ 1000) & "Χιλιάδες")
+    End Function
+
+    Private Function SayUniqueFemale(iNumber As Integer) As String
+    Dim vardigit
+    vardigit = Array("Μια", "Δύο", "Τρεις", "Τέσσερις", _
+    "Πέντε", "Έξι", "Επτά", "Οκτώ", "Εννέα", "Δέκα", "Ένδεκα", _
+    "Δώδεκα", "Δεκατρείς", "Δεκατέσσερεις", "Δεκαπέντε", "Δεκαέξι", "Δεκαεφτά", _
+    "Δεκαοχτώ", "Δεκαεννιά")
+
+    If iNumber > 0 Then SayUniqueFemale = vardigit(iNumber - 1)
+    Erase vardigit
+    End Function
+
+    Private Function SayHundredsFemale(iNumber As Integer) As String
+    Dim vardigit
+    vardigit = Array("Εκατόv", "Διακόσιες", "Τριακόσιες", "Τετρακόσιες", "Πεντακόσιες", _
+    "Εξακόσιες", "Επτακόσιες", "Οκτακόσιες", "Εννιακόσιες")
+    SayHundredsFemale = vardigit(iNumber \ 100 - 1)
+    Erase vardigit
+    End Function
+
